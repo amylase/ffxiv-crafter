@@ -123,7 +123,7 @@ def _calc_progress(parameter: CraftParameter, state: CraftState, efficiency: int
                     10000 + item.standard_craftsmanship) * get_craftsmanship_factor(raw_level, item.internal_level))
     if state.condition == StatusCondition.MALLEABLE:
         progress *= 1.5
-    return progress
+    return floor(progress)
 
 
 def _calc_quality(parameter: CraftParameter, state: CraftState, efficiency: int) -> int:
@@ -146,7 +146,7 @@ def _calc_quality(parameter: CraftParameter, state: CraftState, efficiency: int)
         quality *= 1.5
     elif state.condition == StatusCondition.EXCELLENT:
         quality *= 4.
-    return quality
+    return floor(quality)
 
 
 def _calc_buff_turns(base: int, state: CraftState) -> int:
@@ -368,10 +368,10 @@ class PatientTouch(CraftAction):
         new_state.durability -= self.get_durability_cost(state)
         new_state.cp -= self.get_cp_cost(state)
         new_state.prev_action = self
-        new_state.quality += _calc_quality(parameter, state, 100)
         failure_state = copy(new_state)
         failure_state.inner_quiet = (state.inner_quiet + 1) // 2
         success_state = copy(new_state)
+        success_state.quality += _calc_quality(parameter, state, 100)
         success_state.inner_quiet *= 2
         success_proba = 0.75 if state.condition == StatusCondition.CENTRED else 0.5
         new_states = [(failure_state, 1. - success_proba), (success_state, success_proba)]

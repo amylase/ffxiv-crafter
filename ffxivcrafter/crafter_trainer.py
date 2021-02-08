@@ -25,8 +25,6 @@ def _speed_reward(parameter: CraftParameter, state: CraftState) -> float:
 def _normal_reward(parameter: CraftParameter, state: CraftState) -> float:
     if state.result == CraftResult.SUCCESS:
         reward = state.quality
-    elif state.result == CraftResult.FAILED:
-        reward = state.progress - parameter.item.max_progress
     else:
         reward = 0.
     return float(reward)
@@ -34,6 +32,17 @@ def _normal_reward(parameter: CraftParameter, state: CraftState) -> float:
 
 def terminal_reward(parameter: CraftParameter, state: CraftState) -> float:
     return _normal_reward(parameter, state)
+
+
+def early_reward(parameter: CraftParameter, state: CraftState, prev_state: CraftState) -> float:
+    reward = state.quality - prev_state.quality
+    reward += state.progress - prev_state.progress
+    if state.result == CraftResult.FAILED:
+        reward -= state.quality
+        reward -= parameter.item.max_progress
+    elif state.result == CraftResult.SUCCESS:
+        reward -= parameter.item.max_progress
+    return float(reward)
 
 
 class CraftEnvironment(Environment[CraftState, CraftAction]):
@@ -50,7 +59,7 @@ class CraftEnvironment(Environment[CraftState, CraftAction]):
     def do_action(self, state: CraftState, action: CraftAction) -> List[ActionOutcome]:
         outcomes = []
         for next_state, proba in action.play(self.parameter, state):
-            reward = terminal_reward(self.parameter, next_state)
+            reward = early_reward(self.parameter, next_state, state)
             outcomes.append(ActionOutcome(next_state, reward, proba))
         return outcomes
 
@@ -140,12 +149,18 @@ class LinearQModel(QModel[CraftState, CraftAction]):
 def get_parameter() -> CraftParameter:
     from ffxivcrafter.environment import factors
     player = PlayerParameter(80, 2867, 2727, 554)
-    # aesthetic gatherer hat
+    # special meal for the second restoration
     item_level = 480
     durability = 60
     progress = 9181
     quality = 64862
     is_expert_recipe = True
+    # # coffee cookie
+    # item_level = 418
+    # durability = 80
+    # progress = 3705
+    # quality = 16582
+    # is_expert_recipe = False
     suggested_craftsmanship = factors.suggested_craftsmanship_map[item_level]
     suggested_control = factors.suggested_control_map[item_level]
     item = ItemParameter(item_level, durability, progress, quality, suggested_craftsmanship, suggested_control, is_expert_recipe)
@@ -193,21 +208,23 @@ def main():
         print("")
 
     best_score, best_weights = -1e100, None
-    for _ in range(1500):
-        train(env, model, gamma=0.999, epsilon=0.05, n_iter=500)
-        score = eval_model(model, eval_iter=100)
-        print(f"score: {score}, weights: {model.weights}")
-        if score >= best_score:
-            best_score, best_weights = score, model.weights
-    print(best_score)
-    best_model = LinearQModel(parameter, learning_rate=0.1, initial_weights=best_weights)
-    print("score:", eval_model(best_model, eval_iter=100))
-    print("sample trials from best model")
-    best_policy = QModelPolicy(best_model)
-    for trial in range(10):
-        print(f"trial {trial}:")
-        run_process(best_policy, parameter, initial_state(parameter), verbose=True)
-        print("")
+    try:
+        for _ in range(1500):
+            train(env, model, gamma=1., epsilon=0.05, n_iter=500)
+            score = eval_model(model, eval_iter=100)
+            print(f"score: {score}, weights: {model.weights}")
+            if score >= best_score:
+                best_score, best_weights = score, model.weights
+    finally:
+        print(best_score)
+        best_model = LinearQModel(parameter, learning_rate=0.1, initial_weights=best_weights)
+        print("score:", eval_model(best_model, eval_iter=100))
+        print("sample trials from best model")
+        best_policy = QModelPolicy(best_model)
+        for trial in range(10):
+            print(f"trial {trial}:")
+            run_process(best_policy, parameter, initial_state(parameter), verbose=True)
+            print("")
 
 
 if __name__ == '__main__':
