@@ -1,0 +1,3 @@
+[submodule "thirdparty/handyrl"]
+	path = thirdparty/handyrl
+	url = https://github.com/DeNA/HandyRL.git

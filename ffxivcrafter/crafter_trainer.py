@@ -128,7 +128,10 @@ class LinearQModel(QModel[CraftState, CraftAction]):
             if condition != StatusCondition.NORMAL:
                 xs.append(1 if state.condition == condition else 0)
         xs.append(1.)  # offset
-        return [float(x) for x in xs]
+        fxs = [float(x) for x in xs]
+        sqs = [x * x for x in xs]
+        sqs.pop()
+        return fxs + sqs
 
     def update(self, state: CraftState, action: CraftAction, td_error: float):
         xs = self._feature_vector(state, action)
@@ -209,7 +212,7 @@ def main():
 
     best_score, best_weights = -1e100, None
     try:
-        for _ in range(1500):
+        for _ in range(50):
             train(env, model, gamma=1., epsilon=0.05, n_iter=500)
             score = eval_model(model, eval_iter=100)
             print(f"score: {score}, weights: {model.weights}")
