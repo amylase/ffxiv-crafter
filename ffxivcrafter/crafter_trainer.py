@@ -153,10 +153,16 @@ def get_parameter() -> CraftParameter:
     from ffxivcrafter.environment import factors
     player = PlayerParameter(80, 2867, 2727, 554)
     # special meal for the second restoration
-    item_level = 480
+    # item_level = 480
+    # durability = 60
+    # progress = 9181
+    # quality = 64862
+    # is_expert_recipe = True
+    # shark oil for the last tool improvement
+    item_level = 490
     durability = 60
-    progress = 9181
-    quality = 64862
+    progress = 10049
+    quality = 76939
     is_expert_recipe = True
     # # coffee cookie
     # item_level = 418
@@ -212,7 +218,7 @@ def main():
 
     best_score, best_weights = -1e100, None
     try:
-        for _ in range(50):
+        for _ in range(1000):
             train(env, model, gamma=1., epsilon=0.05, n_iter=500)
             score = eval_model(model, eval_iter=100)
             print(f"score: {score}, weights: {model.weights}")
@@ -220,7 +226,7 @@ def main():
                 best_score, best_weights = score, model.weights
     finally:
         print(best_score)
-        best_model = LinearQModel(parameter, learning_rate=0.1, initial_weights=best_weights)
+        best_model = LinearQModel(parameter, learning_rate=0.3, initial_weights=best_weights)
         print("score:", eval_model(best_model, eval_iter=100))
         print("sample trials from best model")
         best_policy = QModelPolicy(best_model)
