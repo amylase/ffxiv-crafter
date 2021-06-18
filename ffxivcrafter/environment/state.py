@@ -76,7 +76,7 @@ class CraftState:
     def __init__(self, durability: Durability, progress: Progress, quality: Quality, cp: CP, condition: StatusCondition,
                  inner_quiet: int, innovation: int, veneration: int, muscle_memory: int, waste_not: int,
                  great_strides: int, final_appraisal: int, manipulation: int, turn: int,
-                 prev_action: Optional["CraftAction"], random_state: Random, result: CraftResult):
+                 prev_action: Optional["CraftAction"], result: CraftResult):
         self.durability = durability
         self.progress = progress
         self.quality = quality
@@ -94,7 +94,6 @@ class CraftState:
         self.turn = turn
 
         self.prev_action = prev_action
-        self.random_state = random_state
         self.result = result
 
     def clip(self, parameter: CraftParameter):
@@ -130,7 +129,6 @@ class CraftState:
             self.manipulation,
             self.turn,
             self.prev_action,
-            Random(self.random_state.getstate()),
             self.result
         )
 
@@ -141,10 +139,10 @@ class CraftState:
                f"muscle_memory: {self.muscle_memory}, waste_not: {self.waste_not}, " \
                f"great_strides: {self.great_strides}, final_appraisal: {self.final_appraisal}, " \
                f"manipulation: {self.manipulation}, turn: {self.turn}, " \
-               f"prev_action: {self.prev_action}, random_state: {self.random_state}, result: {self.result}>"
+               f"prev_action: {self.prev_action}, result: {self.result}>"
 
 
-def initial_state(parameter: CraftParameter, random_state: int = None):
+def initial_state(parameter: CraftParameter):
     return CraftState(
         parameter.item.max_durability,
         0,
@@ -161,6 +159,5 @@ def initial_state(parameter: CraftParameter, random_state: int = None):
         0,
         0,
         None,
-        Random(random_state),
         CraftResult.ONGOING
     )

@@ -105,6 +105,9 @@ class CraftAction:
             return False
         return self.ja_name == other.ja_name
 
+    def __hash__(self):
+        return hash(self.ja_name)
+
 
 def all_actions() -> List[CraftAction]:
     return [cls() for cls in CraftAction.__subclasses__()]
