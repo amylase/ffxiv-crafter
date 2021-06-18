@@ -132,6 +132,28 @@ class CraftState:
             self.result
         )
 
+    def __eq__(self, other) -> bool:
+        if other is None or not isinstance(other, CraftState):
+            return False
+        return (
+            self.durability == other.durability and
+            self.progress == other.progress and
+            self.quality == other.quality and
+            self.cp == other.cp and
+            self.condition == other.condition and
+            self.inner_quiet == other.inner_quiet and
+            self.innovation == other.innovation and
+            self.veneration == other.veneration and
+            self.muscle_memory == other.muscle_memory and
+            self.waste_not == other.waste_not and
+            self.great_strides == other.great_strides and
+            self.final_appraisal == other.final_appraisal and
+            self.manipulation == other.manipulation and
+            self.turn == other.turn and
+            self.prev_action == other.prev_action and
+            self.result == other.result
+        )
+
     def __str__(self):
         return f"<State durability: {self.durability}, progress: {self.progress}, quality: {self.quality}, " \
                f"cp: {self.cp}, condition: {self.condition}, " \

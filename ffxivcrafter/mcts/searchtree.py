@@ -122,15 +122,48 @@ class SearchTree:
         node_id = node_id or self.root
         self._search(node_id)
 
+    def best_next_action(self) -> CraftAction:
+        node = self.playable_nodes[self.root]
+        assert node.is_expanded()
+
+        def evaluate(action: CraftAction) -> float:
+            next_node = self.probabilistic_nodes[node.next_ids[action]]
+            return next_node.sample_count
+        return max(node.next_ids.keys(), key=evaluate)
+
+    def shift(self, action: CraftAction, next_state: CraftState):
+        assert self.playable_nodes[self.root].is_expanded()
+        probabilistic_node_id = self.playable_nodes[self.root].next_ids[action]
+        probabilistic_node = self.probabilistic_nodes[probabilistic_node_id]
+        for next_playable_node_id in probabilistic_node.next_ids:
+            node = self.playable_nodes[next_playable_node_id]
+            if node.state == next_state:
+                self.root = next_playable_node_id
+                return
+        assert False, "this must not happen"
+
 
 if __name__ == '__main__':
-    from ffxivcrafter.environment.consts import coffee_cookie, lv80_player
+    from ffxivcrafter.environment.consts import coffee_cookie, lv80_player, special_meal_for_second_restoration
     from ffxivcrafter.environment.state import initial_state as get_initial_state
     player = lv80_player()
-    item = coffee_cookie()
+    item = special_meal_for_second_restoration()
     params = CraftParameter(player, item)
-    initial_state = get_initial_state(params)
-    tree = SearchTree(params, initial_state)
-    for _ in range(1000):
-        tree.search()
+    state = get_initial_state(params)
+    tree = SearchTree(params, state)
+    print(item)
+    while state.result == CraftResult.ONGOING:
+        print(state)
+        for _ in range(1000):
+            tree.search()
+        action = tree.best_next_action()
+        print(action)
+        next_states, weights = zip(*action.play(params, state))
+        state = random.choices(next_states, weights)[0]
+        # tree.shift(action, state)
+        del tree
+        tree = SearchTree(params, state)
+
     print("done")
+    print(state)
+    print(state.result)
