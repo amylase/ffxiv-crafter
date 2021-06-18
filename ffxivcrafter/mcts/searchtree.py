@@ -152,12 +152,12 @@ if __name__ == '__main__':
     item = special_meal_for_second_restoration()
     params = CraftParameter(player, item)
     state = get_initial_state(params)
-    playout = Greedy()
+    playout = Greedy(randomness=0.1)
     tree = SearchTree(params, state, playout)
     print(item)
     while state.result == CraftResult.ONGOING:
         print(state)
-        for _ in range(20000):
+        for _ in range(40000):
             tree.search()
         action = tree.best_next_action()
         print(action)
