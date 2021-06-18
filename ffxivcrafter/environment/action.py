@@ -46,7 +46,7 @@ def tick(parameter: CraftParameter, state: CraftState) -> List[ProbabilisticStat
     if state.prev_action.consume_great_strides:
         state.great_strides = 0
     if state.manipulation > 0 and type(state.prev_action) is not Manipulation:
-        state.cp += 5
+        state.durability += 5
     state.manipulation -= 1
     state.turn += 1
     state.clip(parameter)

@@ -25,14 +25,15 @@ class Greedy(PlayoutStrategy):
         self.randomness = randomness
 
     def playout(self, params: CraftParameter, state: CraftState) -> CraftState:
-        rapid_synthesis = RapidSynthesis()  # sagyou
+        basic_synthesis = BasicSynthesis()  # sagyou
         basic_touch = BasicTouch()  # kakou
         masters_mend = MastersMend()
         bierugo = ByregotBlessing()
         while state.result == CraftResult.ONGOING:
-            synthesis_playable = rapid_synthesis.apply(params, state)[1][0].durability > 0
+            synthesis_playable = basic_synthesis.apply(params, state)[0][0].durability > 0
             touch_playable = basic_touch.is_playable(state) and basic_touch.apply(params, state)[0][0].durability > 0
             mend_playable = masters_mend.is_playable(state)
+            bierugo_playable = bierugo.is_playable(state) and bierugo.apply(params, state)[0][0].durability > 0
             if not any([synthesis_playable, touch_playable, mend_playable]):
                 # pure random
                 actions = [action for action in all_actions() if action.is_playable(state)]
@@ -43,12 +44,14 @@ class Greedy(PlayoutStrategy):
                 # pure random
                 actions = [action for action in all_actions() if action.is_playable(state)]
                 action: CraftAction = random.choice(actions)
-            elif synthesis_playable and rapid_synthesis.apply(params, state)[1][0].progress < params.item.max_progress:
-                action = rapid_synthesis
+            elif synthesis_playable and basic_synthesis.apply(params, state)[0][0].progress < params.item.max_progress:
+                action = basic_synthesis
+            elif bierugo_playable and state.cp < 42:
+                action = bierugo
             elif touch_playable:
                 action = basic_touch
             else:
-                action = rapid_synthesis
+                action = basic_synthesis
             next_states, weights = zip(*action.play(params, state))
             state = random.choices(next_states, weights)[0]
         return state
