@@ -2,47 +2,12 @@ from collections import defaultdict
 from random import Random
 from typing import List, Dict
 
-from ffxivcrafter.qlearning.trainer import Environment, QModel, StateType, ActionType, ActionOutcome, train
-from ffxivcrafter.environment.state import CraftState, CraftParameter, initial_state, CraftResult, PlayerParameter, \
+from ffxivcrafter.evaluator import terminal_reward, early_reward
+from ffxivcrafter.qlearning.trainer import Environment, QModel, StateType, ActionOutcome, train
+from ffxivcrafter.environment.state import CraftState, CraftParameter, initial_state, PlayerParameter, \
     ItemParameter, StatusCondition
 from ffxivcrafter.environment.action import CraftAction, all_actions, _calc_quality, _calc_progress, Observe, BasicTouch
 from ffxivcrafter.simulator import Policy, run_process
-
-
-def _speed_reward(parameter: CraftParameter, state: CraftState) -> float:
-    if state.result == CraftResult.SUCCESS:
-        if state.quality < parameter.item.max_quality:
-            reward = state.quality - parameter.item.max_quality
-        else:
-            reward = state.quality / max(1, state.turn)
-    elif state.result == CraftResult.FAILED:
-        reward = (state.progress - parameter.item.max_progress) - parameter.item.max_quality
-    else:
-        reward = 0.
-    return float(reward)
-
-
-def _normal_reward(parameter: CraftParameter, state: CraftState) -> float:
-    if state.result == CraftResult.SUCCESS:
-        reward = state.quality
-    else:
-        reward = 0.
-    return float(reward)
-
-
-def terminal_reward(parameter: CraftParameter, state: CraftState) -> float:
-    return _normal_reward(parameter, state)
-
-
-def early_reward(parameter: CraftParameter, state: CraftState, prev_state: CraftState) -> float:
-    reward = state.quality - prev_state.quality
-    reward += state.progress - prev_state.progress
-    if state.result == CraftResult.FAILED:
-        reward -= state.quality
-        reward -= parameter.item.max_progress
-    elif state.result == CraftResult.SUCCESS:
-        reward -= parameter.item.max_progress
-    return float(reward)
 
 
 class CraftEnvironment(Environment[CraftState, CraftAction]):
@@ -107,18 +72,15 @@ class LinearQModel(QModel[CraftState, CraftAction]):
         xs.append(1 if state.quality >= self.parameter.item.max_quality else 0)
         xs.append(state.cp / self.parameter.player.max_cp)
         xs.append(1 if state.inner_quiet > 0 else 0)
-        xs.append(state.inner_quiet / 10)
+        xs.append(1 if state.inner_quiet >= 11 else 0)
         xs.append(1 if state.innovation > 0 else 0)
-        xs.append(state.innovation / 10)
         xs.append(1 if state.veneration > 0 else 0)
-        xs.append(state.veneration / 10)
         xs.append(1 if state.muscle_memory > 0 else 0)
         xs.append(1 if state.waste_not > 0 else 0)
         xs.append(state.waste_not / 10)
         xs.append(1 if state.great_strides > 0 else 0)
         xs.append(1 if state.final_appraisal > 0 else 0)
         xs.append(1 if state.manipulation > 0 else 0)
-        xs.append(state.manipulation / 10)
         xs.append(1 if state.prev_action is None else 0)
         xs.append(1 if type(state.prev_action) is Observe else 0)
         xs.append(1 if type(state.prev_action) is BasicTouch else 0)
@@ -128,10 +90,7 @@ class LinearQModel(QModel[CraftState, CraftAction]):
             if condition != StatusCondition.NORMAL:
                 xs.append(1 if state.condition == condition else 0)
         xs.append(1.)  # offset
-        fxs = [float(x) for x in xs]
-        sqs = [x * x for x in xs]
-        sqs.pop()
-        return fxs + sqs
+        return xs
 
     def update(self, state: CraftState, action: CraftAction, td_error: float):
         xs = self._feature_vector(state, action)
@@ -218,7 +177,7 @@ def main():
 
     best_score, best_weights = -1e100, None
     try:
-        for _ in range(1000):
+        for _ in range(50):
             train(env, model, gamma=1., epsilon=0.05, n_iter=500)
             score = eval_model(model, eval_iter=100)
             print(f"score: {score}, weights: {model.weights}")

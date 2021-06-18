@@ -1,3 +1,5 @@
+from typing import List
+
 from ffxivcrafter.environment.state import PlayerParameter, ItemParameter, CraftParameter, initial_state, CraftResult, CraftState
 from ffxivcrafter.environment.action import all_actions, CraftAction
 import random
@@ -39,10 +41,18 @@ def run_process(policy: Policy, parameter: CraftParameter, state: CraftState, ve
     return state
 
 
-def average_quality(policy: Policy, parameter: CraftParameter, n_iter: int) -> float:
-    quality_sum = 0
+def iterate_processes(policy: Policy, parameter: CraftParameter, n_iter: int) -> List[CraftState]:
+    final_states = []
     for _ in range(n_iter):
         final_state = run_process(policy, parameter, initial_state(parameter), verbose=False)
+        final_states.append(final_state)
+    return final_states
+
+
+def average_quality(policy: Policy, parameter: CraftParameter, n_iter: int) -> float:
+    quality_sum = 0
+    final_states = iterate_processes(policy, parameter, n_iter)
+    for final_state in final_states:
         if final_state.result == CraftResult.SUCCESS:
             quality_sum += final_state.quality
     return quality_sum / n_iter
