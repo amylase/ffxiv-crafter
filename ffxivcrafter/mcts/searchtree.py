@@ -2,8 +2,9 @@ import math
 import random
 from typing import List, Dict
 
-from ffxivcrafter.environment.action import CraftAction, all_actions
+from ffxivcrafter.environment.action import CraftAction, all_actions, BasicSynthesis
 from ffxivcrafter.environment.state import CraftState, CraftParameter, CraftResult
+from ffxivcrafter.mcts.playout import PlayoutStrategy
 
 
 class TreeNode:
@@ -32,11 +33,12 @@ class ProbabilisticStateNode(TreeNode):
 
 
 class SearchTree:
-    def __init__(self, parameter: CraftParameter, initial_state: CraftState):
+    def __init__(self, parameter: CraftParameter, initial_state: CraftState, playout_algo: PlayoutStrategy):
         self.parameter = parameter
         self.playable_nodes: List[PlayableStateNode] = []
         self.probabilistic_nodes: List[ProbabilisticStateNode] = []
         self.root = self._add_playable_node(initial_state)
+        self.playout_algo = playout_algo
 
     def _add_playable_node(self, state: CraftState) -> int:
         node_id = len(self.playable_nodes)
@@ -66,11 +68,7 @@ class SearchTree:
 
     def _playout(self, state: CraftState) -> float:
         # returns reward of playout.
-        # todo: implement smart playout strat. probably greedy is fine...?
-        while state.result == CraftResult.ONGOING:
-            actions = [action for action in all_actions() if action.is_playable(state)]
-            action: CraftAction = random.choice(actions)
-            state = action.play(self.parameter, state)
+        state = self.playout_algo.playout(self.parameter, state)
         # todo: adjust reward
         if state.result == CraftResult.FAILED:
             return 0.
@@ -111,7 +109,10 @@ class SearchTree:
             next_probabilistic_node_id = node.next_ids[action]
             probabilistic_node = self.probabilistic_nodes[next_probabilistic_node_id]
             next_playable_node_id = random.choices(probabilistic_node.next_ids, probabilistic_node.weights)[0]
-            reward = self._search(next_playable_node_id)
+            if not fresh_actions:
+                reward = self._search(next_playable_node_id)
+            else:
+                reward = self._playout(self.playable_nodes[next_playable_node_id].state)
             probabilistic_node.sample_count += 1.
             probabilistic_node.reward_sum += reward
         node.sample_count += 1.
@@ -146,24 +147,24 @@ class SearchTree:
 if __name__ == '__main__':
     from ffxivcrafter.environment.consts import coffee_cookie, lv80_player, special_meal_for_second_restoration
     from ffxivcrafter.environment.state import initial_state as get_initial_state
+    from ffxivcrafter.mcts.playout import PureRandom, Greedy
     player = lv80_player()
     item = special_meal_for_second_restoration()
     params = CraftParameter(player, item)
     state = get_initial_state(params)
-    tree = SearchTree(params, state)
+    playout = Greedy()
+    tree = SearchTree(params, state, playout)
     print(item)
     while state.result == CraftResult.ONGOING:
         print(state)
-        for _ in range(1000):
+        for _ in range(20000):
             tree.search()
         action = tree.best_next_action()
         print(action)
         next_states, weights = zip(*action.play(params, state))
         state = random.choices(next_states, weights)[0]
         # tree.shift(action, state)
-        del tree
-        tree = SearchTree(params, state)
-
+        tree = SearchTree(params, state, playout)
     print("done")
     print(state)
     print(state.result)
