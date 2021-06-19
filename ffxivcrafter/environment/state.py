@@ -154,6 +154,26 @@ class CraftState:
             self.result == other.result
         )
 
+    def __hash__(self) -> int:
+        return hash((
+            self.durability,
+            self.progress,
+            self.quality,
+            self.cp,
+            self.condition,
+            self.inner_quiet,
+            self.innovation,
+            self.veneration,
+            self.muscle_memory,
+            self.waste_not,
+            self.great_strides,
+            self.final_appraisal,
+            self.manipulation,
+            self.turn,
+            self.prev_action,
+            self.result
+        ))
+
     def __str__(self):
         return f"<State durability: {self.durability}, progress: {self.progress}, quality: {self.quality}, " \
                f"cp: {self.cp}, condition: {self.condition}, " \
