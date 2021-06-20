@@ -17,6 +17,17 @@ def special_meal_for_second_restoration() -> ItemParameter:
     return ItemParameter(item_level, durability, progress, quality, suggested_craftsmanship, suggested_control, is_expert_recipe)
 
 
+def special_meal_for_fourth_restoration() -> ItemParameter:
+    item_level = 490
+    durability = 55
+    progress = 12046
+    quality = 81447
+    is_expert_recipe = True
+    suggested_craftsmanship = factors.suggested_craftsmanship_map[item_level]
+    suggested_control = factors.suggested_control_map[item_level]
+    return ItemParameter(item_level, durability, progress, quality, suggested_craftsmanship, suggested_control, is_expert_recipe)
+
+
 def coffee_cookie() -> ItemParameter:
     # coffee cookie
     item_level = 418

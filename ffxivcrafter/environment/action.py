@@ -199,6 +199,9 @@ class InnerQuiet(CraftAction):
     def __init__(self):
         super(InnerQuiet, self).__init__("インナークワイエット", 18, 0, False, False)
 
+    def is_playable(self, state: CraftState) -> bool:
+        return super(InnerQuiet, self).is_playable(state) and state.inner_quiet == 0
+
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
         new_state.inner_quiet += 1
