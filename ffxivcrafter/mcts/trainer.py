@@ -29,7 +29,7 @@ def generate_samples(params: CraftParameter, evaluator: EvaluatorType, depth: in
                     continue
                 final_state = calc_final_state(params, next_state, evaluator, depth)
                 score = terminal_score(params, final_state)
-                samples.append((final_state, score))
+                samples.append((next_state, score))
                 expected_score += score * proba
             action_scores.append((action, expected_score))
         next_action = max(action_scores, key=lambda tup: tup[1])[0]
