@@ -5,7 +5,7 @@ from typing import Tuple, Optional, Callable
 from ffxivcrafter.environment.action import all_actions, CraftAction
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 from ffxivcrafter.mcts.playout import Greedy
-
+from ffxivcrafter.modeling.model import LinearEvaluator
 
 EvaluatorType = Callable[[CraftParameter, CraftState], float]
 
@@ -23,7 +23,9 @@ def greedy_evaluator(params: CraftParameter, state: CraftState) -> float:
 
 
 def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, depth: int) -> Tuple[Optional[CraftAction], float]:
-    if depth == 0 or state.result != CraftResult.ONGOING:
+    if state.result != CraftResult.ONGOING:
+        return None, terminal_score(params, state)
+    if depth == 0:
         return None, evaluator(params, state)
     actions = [action for action in all_actions() if action.is_playable(state)]
     expectations = []
@@ -55,6 +57,7 @@ def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, dep
 if __name__ == '__main__':
     import random
     import time
+    import json
 
     from ffxivcrafter.environment.consts import coffee_cookie, lv80_player, special_meal_for_second_restoration, special_meal_for_fourth_restoration
     from ffxivcrafter.environment.state import initial_state as get_initial_state
@@ -65,14 +68,15 @@ if __name__ == '__main__':
     rng = random.Random()
     print(item)
 
-    depth = 1
+    depth = 3
     # evaluator = greedy_evaluator
-    with open("../../data/evaluator.pkl", "rb") as f:
-        evaluator_obj = pickle.load(f)
+    with open("../../data/model_params.json", "rb") as f:
+        model_params = json.load(f)
+        model = LinearEvaluator(**model_params)
 
         def evaluator(params: CraftParameter, state: CraftState) -> float:
-            return evaluator_obj.evaluate(state)
-    rng.seed(1000000)
+            return model.evaluate(state)
+    rng.seed(1)
     total_time = -time.time()
     while state.result == CraftResult.ONGOING:
         elapsed = -time.time()
