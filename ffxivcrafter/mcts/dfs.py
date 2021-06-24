@@ -1,3 +1,4 @@
+import pickle
 from functools import lru_cache
 from typing import Tuple, Optional, Callable
 
@@ -64,15 +65,21 @@ if __name__ == '__main__':
     rng = random.Random()
     print(item)
 
-    depth = 3
+    depth = 1
+    # evaluator = greedy_evaluator
+    with open("../../data/evaluator.pkl", "rb") as f:
+        evaluator_obj = pickle.load(f)
+
+        def evaluator(params: CraftParameter, state: CraftState) -> float:
+            return evaluator_obj.evaluate(state)
     rng.seed(1000000)
     total_time = -time.time()
     while state.result == CraftResult.ONGOING:
         elapsed = -time.time()
         print(state)
-        current_score = greedy_evaluator(params, state)
+        current_score = evaluator(params, state)
         print(f"score: {current_score:.3f} (predicted quality: {int(current_score * params.item.max_quality)})")
-        action, score = dfs(params, state, greedy_evaluator, depth)
+        action, score = dfs(params, state, evaluator, depth)
         elapsed += time.time()
         print(f"{action}, elapsed: {elapsed:.3f}, score: {score:.3f} (predicted quality: {int(score * params.item.max_quality)})")
         next_states, weights = zip(*action.play(params, state))
