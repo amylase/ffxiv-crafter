@@ -1,3 +1,4 @@
+import json
 import pickle
 
 from scipy.stats import kendalltau
@@ -27,9 +28,13 @@ def main():
     print(mean_squared_error(y_test, y_pred))
     print(kendalltau(y_test, y_pred))
 
-    evaluator = LinearEvaluator(weights=model.coef_.tolist(), intercept=model.intercept_)
-    with open("../../data/evaluator.pkl", "wb") as f:
-        pickle.dump(evaluator, f)
+    model_params = {
+        "weights": model.coef_.tolist(),
+        "intercept": model.intercept_
+    }
+    # evaluator = LinearEvaluator(weights=model.coef_.tolist(), intercept=model.intercept_)
+    with open("../../data/model_params.json", "w") as f:
+        json.dump(model_params, f)
 
 
 if __name__ == '__main__':
