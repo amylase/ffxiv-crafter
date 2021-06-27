@@ -209,6 +209,7 @@ def _normal_to_excellent(parameter: CraftParameter):
 
 def get_transition_probabilities(parameter: CraftParameter, state: CraftState) -> Dict[StatusCondition, float]:
     if parameter.item.expert_recipe:
+        # 5.35
         return {
             StatusCondition.GOOD: 0.12,
             StatusCondition.CENTRED: 0.15,
@@ -218,6 +219,14 @@ def get_transition_probabilities(parameter: CraftParameter, state: CraftState) -
             StatusCondition.PRIMED: 0.12,
             StatusCondition.NORMAL: 0.22
         }
+        # # 5.25
+        # return {
+        #     StatusCondition.GOOD: 0.12,
+        #     StatusCondition.CENTRED: 0.15,
+        #     StatusCondition.PLIANT: 0.12,
+        #     StatusCondition.STURDY: 0.15,
+        #     StatusCondition.NORMAL: 0.46
+        # }
     if state.condition == StatusCondition.EXCELLENT:
         return {StatusCondition.POOR: 1.}
     elif state.condition == StatusCondition.GOOD:

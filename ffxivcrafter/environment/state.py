@@ -76,7 +76,7 @@ class CraftState:
     def __init__(self, durability: Durability, progress: Progress, quality: Quality, cp: CP, condition: StatusCondition,
                  inner_quiet: int, innovation: int, veneration: int, muscle_memory: int, waste_not: int,
                  great_strides: int, final_appraisal: int, manipulation: int, turn: int,
-                 prev_action: Optional["CraftAction"], random_state: Random, result: CraftResult):
+                 prev_action: Optional["CraftAction"], result: CraftResult):
         self.durability = durability
         self.progress = progress
         self.quality = quality
@@ -94,7 +94,6 @@ class CraftState:
         self.turn = turn
 
         self.prev_action = prev_action
-        self.random_state = random_state
         self.result = result
 
     def clip(self, parameter: CraftParameter):
@@ -130,9 +129,50 @@ class CraftState:
             self.manipulation,
             self.turn,
             self.prev_action,
-            Random(self.random_state.getstate()),
             self.result
         )
+
+    def __eq__(self, other) -> bool:
+        if other is None or not isinstance(other, CraftState):
+            return False
+        return (
+            self.durability == other.durability and
+            self.progress == other.progress and
+            self.quality == other.quality and
+            self.cp == other.cp and
+            self.condition == other.condition and
+            self.inner_quiet == other.inner_quiet and
+            self.innovation == other.innovation and
+            self.veneration == other.veneration and
+            self.muscle_memory == other.muscle_memory and
+            self.waste_not == other.waste_not and
+            self.great_strides == other.great_strides and
+            self.final_appraisal == other.final_appraisal and
+            self.manipulation == other.manipulation and
+            self.turn == other.turn and
+            self.prev_action == other.prev_action and
+            self.result == other.result
+        )
+
+    def __hash__(self) -> int:
+        return hash((
+            self.durability,
+            self.progress,
+            self.quality,
+            self.cp,
+            self.condition,
+            self.inner_quiet,
+            self.innovation,
+            self.veneration,
+            self.muscle_memory,
+            self.waste_not,
+            self.great_strides,
+            self.final_appraisal,
+            self.manipulation,
+            self.turn,
+            self.prev_action,
+            self.result
+        ))
 
     def __str__(self):
         return f"<State durability: {self.durability}, progress: {self.progress}, quality: {self.quality}, " \
@@ -141,10 +181,10 @@ class CraftState:
                f"muscle_memory: {self.muscle_memory}, waste_not: {self.waste_not}, " \
                f"great_strides: {self.great_strides}, final_appraisal: {self.final_appraisal}, " \
                f"manipulation: {self.manipulation}, turn: {self.turn}, " \
-               f"prev_action: {self.prev_action}, random_state: {self.random_state}, result: {self.result}>"
+               f"prev_action: {self.prev_action}, result: {self.result}>"
 
 
-def initial_state(parameter: CraftParameter, random_state: int = None):
+def initial_state(parameter: CraftParameter):
     return CraftState(
         parameter.item.max_durability,
         0,
@@ -161,6 +201,5 @@ def initial_state(parameter: CraftParameter, random_state: int = None):
         0,
         0,
         None,
-        Random(random_state),
         CraftResult.ONGOING
     )
