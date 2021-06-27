@@ -6,6 +6,11 @@ def lv80_player() -> PlayerParameter:
     return PlayerParameter(80, 2867, 2727, 554)
 
 
+def lv80_player_with_buffs() -> PlayerParameter:
+    # patch 5.3
+    return PlayerParameter(80, 2978, 2787, 655)
+
+
 def special_meal_for_second_restoration() -> ItemParameter:
     item_level = 480
     durability = 60

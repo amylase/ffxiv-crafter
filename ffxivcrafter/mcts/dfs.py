@@ -2,7 +2,9 @@ import pickle
 from functools import lru_cache
 from typing import Tuple, Optional, Callable
 
-from ffxivcrafter.environment.action import all_actions, CraftAction
+from ffxivcrafter.environment.action import all_actions, CraftAction, RapidSynthesis, BasicTouch, DelicateSynthesis, \
+    ByregotBlessing, PreparatoryTouch, HastyTouch, PreciseTouch, PatientTouch, Innovation, StandardTouch, FocusedTouch, \
+    GreatStrides
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 from ffxivcrafter.mcts.playout import Greedy
 from ffxivcrafter.modeling.model import LinearEvaluator
@@ -22,12 +24,29 @@ def greedy_evaluator(params: CraftParameter, state: CraftState) -> float:
     return terminal_score(params, final_state)
 
 
+def is_completable(params: CraftParameter, state: CraftState) -> bool:
+    rapid_synth = RapidSynthesis()
+    if not rapid_synth.is_playable(state):
+        return False
+    for next_state, proba in rapid_synth.play(params, state):
+        if next_state.result == CraftResult.SUCCESS:
+            return True
+    return False
+
+
+_quality_actions = frozenset([BasicTouch(), ByregotBlessing(), PreparatoryTouch(), HastyTouch(), PreciseTouch(),
+                              PatientTouch(), Innovation(), StandardTouch(), FocusedTouch(), GreatStrides()])
+def is_quality_action(action: CraftAction) -> bool:
+    return action in _quality_actions
+
+
 def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, depth: int) -> Tuple[Optional[CraftAction], float]:
     if state.result != CraftResult.ONGOING:
         return None, terminal_score(params, state)
     if depth == 0:
         return None, evaluator(params, state)
-    actions = [action for action in all_actions() if action.is_playable(state)]
+    is_completable_state = is_completable(params, state)
+    actions = [action for action in all_actions() if action.is_playable(state) and (is_completable_state or not is_quality_action(action))]
     expectations = []
     best_expectation = 0.
     for action in actions:
@@ -59,24 +78,24 @@ if __name__ == '__main__':
     import time
     import json
 
-    from ffxivcrafter.environment.consts import coffee_cookie, lv80_player, special_meal_for_second_restoration, special_meal_for_fourth_restoration
+    from ffxivcrafter.environment.consts import coffee_cookie, lv80_player, lv80_player_with_buffs, special_meal_for_second_restoration, special_meal_for_fourth_restoration
     from ffxivcrafter.environment.state import initial_state as get_initial_state
-    player = lv80_player()
-    item = special_meal_for_second_restoration()
+    player = lv80_player_with_buffs()
+    item = special_meal_for_fourth_restoration()
     params = CraftParameter(player, item)
     state = get_initial_state(params)
     rng = random.Random()
     print(item)
 
-    depth = 3
-    # evaluator = greedy_evaluator
-    with open("../../data/model_params.json", "rb") as f:
-        model_params = json.load(f)
-        model = LinearEvaluator(**model_params)
-
-        def evaluator(params: CraftParameter, state: CraftState) -> float:
-            return model.evaluate(state)
-    rng.seed(1)
+    depth = 5
+    evaluator = greedy_evaluator
+    # with open("../../data/model_params.json", "rb") as f:
+    #     model_params = json.load(f)
+    #     model = LinearEvaluator(**model_params)
+    #
+    #     def evaluator(params: CraftParameter, state: CraftState) -> float:
+    #         return model.evaluate(state)
+    rng.seed(3333)
     total_time = -time.time()
     while state.result == CraftResult.ONGOING:
         elapsed = -time.time()

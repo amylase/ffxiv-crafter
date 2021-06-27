@@ -1,7 +1,7 @@
 import random
 
 from ffxivcrafter.environment.action import all_actions, CraftAction, BasicSynthesis, BasicTouch, MastersMend, \
-    ByregotBlessing, RapidSynthesis, GreatStrides
+    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 
 
@@ -28,6 +28,7 @@ class Greedy(PlayoutStrategy):
     def playout(self, params: CraftParameter, state: CraftState) -> CraftState:
         basic_synthesis = BasicSynthesis()  # sagyou
         basic_touch = BasicTouch()  # kakou
+        standard_touch = StandardTouch()  # chukyu kakou
         masters_mend = MastersMend()
         bierugo = ByregotBlessing()
         great_strides = GreatStrides()
@@ -47,14 +48,19 @@ class Greedy(PlayoutStrategy):
                 # pure random
                 actions = [action for action in all_actions() if action.is_playable(state)]
                 action: CraftAction = random.choice(actions)
-            elif great_strides_playable and state.cp < 74 and state.great_strides == 0:
-                action = great_strides
+            # elif great_strides_playable and state.cp < 74 and state.great_strides == 0:
+            #     action = great_strides
             elif synthesis_playable and basic_synthesis.apply(params, state)[0][0].progress < params.item.max_progress:
                 action = basic_synthesis
-            elif bierugo_playable and state.cp < 42:
-                action = bierugo
+            # elif bierugo_playable and state.cp < 42:
+            #     action = bierugo
             elif touch_playable:
-                action = basic_touch
+                if state.prev_action is not None and state.prev_action.ja_name == "加工":
+                    action = standard_touch
+                elif state.prev_action is not None and state.prev_action.ja_name == "経過観察":
+                    action = FocusedTouch()
+                else:
+                    action = basic_touch
             else:
                 action = basic_synthesis
             if self.force_normal:

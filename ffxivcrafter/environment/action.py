@@ -258,7 +258,7 @@ class Groundwork(CraftAction):
 
 class Observe(CraftAction):
     def __init__(self):
-        super(Observe, self).__init__("経過観察", 7, 0, False, True)
+        super(Observe, self).__init__("経過観察", 7, 0, False, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
