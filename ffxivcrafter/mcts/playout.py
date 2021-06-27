@@ -50,7 +50,7 @@ class Greedy(PlayoutStrategy):
                 action: CraftAction = random.choice(actions)
             # elif great_strides_playable and state.cp < 74 and state.great_strides == 0:
             #     action = great_strides
-            elif synthesis_playable and basic_synthesis.apply(params, state)[0][0].progress < params.item.max_progress:
+            elif synthesis_playable and state.progress < basic_synthesis.play(params, state)[0][0].progress < params.item.max_progress:
                 action = basic_synthesis
             # elif bierugo_playable and state.cp < 42:
             #     action = bierugo

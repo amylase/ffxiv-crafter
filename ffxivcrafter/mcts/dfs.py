@@ -4,7 +4,7 @@ from typing import Tuple, Optional, Callable
 
 from ffxivcrafter.environment.action import all_actions, CraftAction, RapidSynthesis, BasicTouch, DelicateSynthesis, \
     ByregotBlessing, PreparatoryTouch, HastyTouch, PreciseTouch, PatientTouch, Innovation, StandardTouch, FocusedTouch, \
-    GreatStrides
+    GreatStrides, InnerQuiet, FinalAppraisal, Veneration, Manipulation, WasteNot, WasteNotII
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 from ffxivcrafter.mcts.playout import Greedy
 from ffxivcrafter.modeling.model import LinearEvaluator
@@ -40,6 +40,38 @@ def is_quality_action(action: CraftAction) -> bool:
     return action in _quality_actions
 
 
+def is_meaningful_action(action: CraftAction, params: CraftParameter, state: CraftState):
+    if isinstance(action, InnerQuiet):
+        return state.inner_quiet <= 0
+    elif isinstance(action, FinalAppraisal):
+        return state.final_appraisal <= 0
+    elif isinstance(action, BasicTouch):
+        return not isinstance(state.prev_action, BasicTouch)
+    elif isinstance(action, PatientTouch):
+        return state.inner_quiet <= 8
+    elif isinstance(action, RapidSynthesis):
+        for next_state, proba in action.apply(params, state):
+            if next_state.progress >= params.item.max_progress:
+                return False
+        return True
+    elif isinstance(action, Veneration):
+        duration = 6 if state.condition == StatusCondition.PRIMED else 4
+        return duration > state.veneration
+    elif isinstance(action, Innovation):
+        duration = 6 if state.condition == StatusCondition.PRIMED else 4
+        return duration > state.innovation
+    elif isinstance(action, Manipulation):
+        duration = 10 if state.condition == StatusCondition.PRIMED else 8
+        return duration > state.manipulation
+    elif isinstance(action, WasteNot):
+        duration = 6 if state.condition == StatusCondition.PRIMED else 4
+        return duration > state.waste_not
+    elif isinstance(action, WasteNotII):
+        duration = 10 if state.condition == StatusCondition.PRIMED else 8
+        return duration > state.waste_not
+    return True
+
+
 def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, depth: int) -> Tuple[Optional[CraftAction], float]:
     if state.result != CraftResult.ONGOING:
         return None, terminal_score(params, state)
@@ -50,12 +82,18 @@ def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, dep
     expectations = []
     best_expectation = 0.
     for action in actions:
+        if not is_meaningful_action(action, params, state):
+            continue
         expectation = 0.
         upper_bound = 1.
-        # ignore special next states
+        # ignore special next states if action is not Final Appraisal
+        if action.ja_name == "最終確認":
+            next_condition = state.condition
+        else:
+            next_condition = StatusCondition.NORMAL
         next_states = sorted(action.play(params, state), key=lambda tup: tup[1], reverse=True)
         next_normal_states = [(next_state, proba) for next_state, proba in next_states
-                              if next_state.condition == StatusCondition.NORMAL and next_state.result == CraftResult.ONGOING]
+                              if next_state.condition == next_condition and next_state.result == CraftResult.ONGOING]
         next_terminal_states = [(next_state, proba) for next_state, proba in next_states
                                 if next_state.result != CraftResult.ONGOING]
         terminal_proba = sum(proba for next_state, proba in next_terminal_states)
@@ -87,7 +125,7 @@ if __name__ == '__main__':
     rng = random.Random()
     print(item)
 
-    depth = 5
+    depth = 4
     evaluator = greedy_evaluator
     # with open("../../data/model_params.json", "rb") as f:
     #     model_params = json.load(f)
@@ -95,7 +133,7 @@ if __name__ == '__main__':
     #
     #     def evaluator(params: CraftParameter, state: CraftState) -> float:
     #         return model.evaluate(state)
-    rng.seed(3333)
+    rng.seed(10000)
     total_time = -time.time()
     while state.result == CraftResult.ONGOING:
         elapsed = -time.time()
