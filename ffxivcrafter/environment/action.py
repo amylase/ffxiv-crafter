@@ -41,12 +41,10 @@ def tick(parameter: CraftParameter, state: CraftState) -> List[ProbabilisticStat
     state.waste_not -= 1
     state.great_strides -= 1
     state.final_appraisal -= 1
-    if state.prev_action.consume_muscle_memory:
-        state.muscle_memory = 0
     if state.prev_action.consume_great_strides:
         state.great_strides = 0
     if state.manipulation > 0 and type(state.prev_action) is not Manipulation:
-        state.cp += 5
+        state.durability += 5
     state.manipulation -= 1
     state.turn += 1
     state.clip(parameter)
@@ -63,11 +61,10 @@ def tick(parameter: CraftParameter, state: CraftState) -> List[ProbabilisticStat
 
 
 class CraftAction:
-    def __init__(self, ja_name: str, cp_cost: int, durability_cost: int, consume_muscle_memory: bool, consume_great_strides: bool):
+    def __init__(self, ja_name: str, cp_cost: int, durability_cost: int, consume_great_strides: bool):
         self.ja_name = ja_name
         self._cp_cost = cp_cost
         self._durability_cost = durability_cost
-        self.consume_muscle_memory = consume_muscle_memory
         self.consume_great_strides = consume_great_strides
 
     def get_cp_cost(self, state: CraftState) -> int:
@@ -104,6 +101,9 @@ class CraftAction:
         if not isinstance(other, CraftAction):
             return False
         return self.ja_name == other.ja_name
+
+    def __hash__(self):
+        return hash(self.ja_name)
 
 
 def all_actions() -> List[CraftAction]:
@@ -155,19 +155,20 @@ def _calc_buff_turns(base: int, state: CraftState) -> int:
 
 class BasicSynthesis(CraftAction):
     def __init__(self):
-        super(BasicSynthesis, self).__init__("作業", 0, 10, True, False)
+        super(BasicSynthesis, self).__init__("作業", 0, 10, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
         new_state.durability -= self.get_durability_cost(state)
         new_state.progress += _calc_progress(parameter, state, 120)  # todo: set 100 when crafter level is low
         new_state.prev_action = self
+        new_state.muscle_memory = 0
         return deterministic(new_state)
 
 
 class BasicTouch(CraftAction):
     def __init__(self):
-        super(BasicTouch, self).__init__("加工", 18, 10, False, True)
+        super(BasicTouch, self).__init__("加工", 18, 10, True)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -182,7 +183,7 @@ class BasicTouch(CraftAction):
 
 class MastersMend(CraftAction):
     def __init__(self):
-        super(MastersMend, self).__init__("マスターズメンド", 88, 0, False, False)
+        super(MastersMend, self).__init__("マスターズメンド", 88, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -194,11 +195,12 @@ class MastersMend(CraftAction):
 
 class InnerQuiet(CraftAction):
     def __init__(self):
-        super(InnerQuiet, self).__init__("インナークワイエット", 18, 0, False, False)
+        super(InnerQuiet, self).__init__("インナークワイエット", 18, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
-        new_state.inner_quiet += 1
+        if new_state.inner_quiet == 0:
+            new_state.inner_quiet += 1
         new_state.cp -= self.get_cp_cost(state)
         new_state.prev_action = self
         return deterministic(new_state)
@@ -206,7 +208,7 @@ class InnerQuiet(CraftAction):
 
 class DelicateSynthesis(CraftAction):
     def __init__(self):
-        super(DelicateSynthesis, self).__init__("精密作業", 32, 10, True, True)
+        super(DelicateSynthesis, self).__init__("精密作業", 32, 10, True)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -217,12 +219,13 @@ class DelicateSynthesis(CraftAction):
             new_state.inner_quiet += 1
         new_state.cp -= self.get_cp_cost(state)
         new_state.prev_action = self
+        new_state.muscle_memory = 0
         return deterministic(new_state)
 
 
 class CarefulSynthesis(CraftAction):
     def __init__(self):
-        super(CarefulSynthesis, self).__init__("模範作業", 7, 10, True, False)
+        super(CarefulSynthesis, self).__init__("模範作業", 7, 10, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -230,12 +233,13 @@ class CarefulSynthesis(CraftAction):
         new_state.progress += _calc_progress(parameter, state, 150)
         new_state.cp -= self.get_cp_cost(state)
         new_state.prev_action = self
+        new_state.muscle_memory = 0
         return deterministic(new_state)
 
 
 class Groundwork(CraftAction):
     def __init__(self):
-        super(Groundwork, self).__init__("下地作業", 18, 20, True, False)
+        super(Groundwork, self).__init__("下地作業", 18, 20, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -247,12 +251,13 @@ class Groundwork(CraftAction):
             new_state.progress += _calc_progress(parameter, state, 300)
         new_state.cp -= self.get_cp_cost(state)
         new_state.prev_action = self
+        new_state.muscle_memory = 0
         return deterministic(new_state)
 
 
 class Observe(CraftAction):
     def __init__(self):
-        super(Observe, self).__init__("経過観察", 7, 0, False, True)
+        super(Observe, self).__init__("経過観察", 7, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -263,7 +268,10 @@ class Observe(CraftAction):
 
 class ByregotBlessing(CraftAction):
     def __init__(self):
-        super(ByregotBlessing, self).__init__("ビエルゴの祝福", 24, 10, False, True)
+        super(ByregotBlessing, self).__init__("ビエルゴの祝福", 24, 10, True)
+
+    def is_playable(self, state: CraftState) -> bool:
+        return super(ByregotBlessing, self).is_playable(state) and state.inner_quiet > 0
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -278,7 +286,7 @@ class ByregotBlessing(CraftAction):
 
 class PreparatoryTouch(CraftAction):
     def __init__(self):
-        super(PreparatoryTouch, self).__init__("下地加工", 40, 20, False, True)
+        super(PreparatoryTouch, self).__init__("下地加工", 40, 20, True)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -293,7 +301,7 @@ class PreparatoryTouch(CraftAction):
 
 class RapidSynthesis(CraftAction):
     def __init__(self):
-        super(RapidSynthesis, self).__init__("突貫作業", 0, 10, True, False)
+        super(RapidSynthesis, self).__init__("突貫作業", 0, 10, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -303,13 +311,14 @@ class RapidSynthesis(CraftAction):
         success_state = copy(new_state)
         success_state.progress += _calc_progress(parameter, state, 500)
         success_proba = 0.75 if state.condition == StatusCondition.CENTRED else 0.5
+        success_state.muscle_memory = 0
         new_states = [(failure_state, 1. - success_proba), (success_state, success_proba)]
         return new_states
 
 
 class IntensiveSynthesis(CraftAction):
     def __init__(self):
-        super(IntensiveSynthesis, self).__init__("集中作業", 6, 10, True, False)
+        super(IntensiveSynthesis, self).__init__("集中作業", 6, 10, False)
 
     def is_playable(self, state: CraftState) -> bool:
         return state.condition in [StatusCondition.GOOD, StatusCondition.EXCELLENT] and super(IntensiveSynthesis, self).is_playable(state)
@@ -320,12 +329,13 @@ class IntensiveSynthesis(CraftAction):
         new_state.cp -= self.get_cp_cost(state)
         new_state.progress += _calc_progress(parameter, state, 400)
         new_state.prev_action = self
+        new_state.muscle_memory = 0
         return deterministic(new_state)
 
 
 class HastyTouch(CraftAction):
     def __init__(self):
-        super(HastyTouch, self).__init__("ヘイスティタッチ", 0, 10, False, True)
+        super(HastyTouch, self).__init__("ヘイスティタッチ", 0, 10, True)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -343,7 +353,7 @@ class HastyTouch(CraftAction):
 
 class PreciseTouch(CraftAction):
     def __init__(self):
-        super(PreciseTouch, self).__init__("集中加工", 18, 10, False, True)
+        super(PreciseTouch, self).__init__("集中加工", 18, 10, True)
 
     def is_playable(self, state: CraftState) -> bool:
         return state.condition in [StatusCondition.GOOD, StatusCondition.EXCELLENT] and super(PreciseTouch, self).is_playable(state)
@@ -361,17 +371,17 @@ class PreciseTouch(CraftAction):
 
 class PatientTouch(CraftAction):
     def __init__(self):
-        super(PatientTouch, self).__init__("専心加工", 6, 10, False, True)
+        super(PatientTouch, self).__init__("専心加工", 6, 10, True)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
         new_state.durability -= self.get_durability_cost(state)
         new_state.cp -= self.get_cp_cost(state)
         new_state.prev_action = self
+        new_state.quality += _calc_quality(parameter, state, 100)
         failure_state = copy(new_state)
         failure_state.inner_quiet = (state.inner_quiet + 1) // 2
         success_state = copy(new_state)
-        success_state.quality += _calc_quality(parameter, state, 100)
         success_state.inner_quiet *= 2
         success_proba = 0.75 if state.condition == StatusCondition.CENTRED else 0.5
         new_states = [(failure_state, 1. - success_proba), (success_state, success_proba)]
@@ -380,7 +390,7 @@ class PatientTouch(CraftAction):
 
 class TricksOfTheTrade(CraftAction):
     def __init__(self):
-        super(TricksOfTheTrade, self).__init__("秘訣", 0, 0, False, False)
+        super(TricksOfTheTrade, self).__init__("秘訣", 0, 0, False)
 
     def is_playable(self, state: CraftState) -> bool:
         return state.condition in [StatusCondition.GOOD, StatusCondition.EXCELLENT] and super(TricksOfTheTrade, self).is_playable(state)
@@ -394,7 +404,7 @@ class TricksOfTheTrade(CraftAction):
 
 class Innovation(CraftAction):
     def __init__(self):
-        super(Innovation, self).__init__("イノベーション", 18, 0, False, False)
+        super(Innovation, self).__init__("イノベーション", 18, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -406,7 +416,7 @@ class Innovation(CraftAction):
 
 class Veneration(CraftAction):
     def __init__(self):
-        super(Veneration, self).__init__("ヴェネレーション", 18, 0, False, False)
+        super(Veneration, self).__init__("ヴェネレーション", 18, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -418,7 +428,7 @@ class Veneration(CraftAction):
 
 class MuscleMemory(CraftAction):
     def __init__(self):
-        super(MuscleMemory, self).__init__("確信", 6, 10, False, False)
+        super(MuscleMemory, self).__init__("確信", 6, 10, False)
 
     def is_playable(self, state: CraftState) -> bool:
         return state.prev_action is None and super(MuscleMemory, self).is_playable(state)
@@ -435,16 +445,17 @@ class MuscleMemory(CraftAction):
 
 class FocusedSynthesis(CraftAction):
     def __init__(self):
-        super(FocusedSynthesis, self).__init__("注視作業", 5, 10, True, False)
+        super(FocusedSynthesis, self).__init__("注視作業", 5, 10, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
         new_state.durability -= self.get_durability_cost(state)
         new_state.prev_action = self
         new_state.cp -= self.get_cp_cost(state)
-        success_state = copy(new_state)
-        new_state.progress += _calc_progress(parameter, state, 200)
         failure_state = copy(new_state)
+        new_state.progress += _calc_progress(parameter, state, 200)
+        success_state = copy(new_state)
+        success_state.muscle_memory = 0
         if type(state.prev_action) is Observe:
             return deterministic(success_state)
         else:
@@ -454,7 +465,7 @@ class FocusedSynthesis(CraftAction):
 
 class StandardTouch(CraftAction):
     def __init__(self):
-        super(StandardTouch, self).__init__("中級加工", 32, 10, False, True)
+        super(StandardTouch, self).__init__("中級加工", 32, 10, True)
 
     def get_cp_cost(self, state: CraftState) -> int:
         return 18 if type(state.prev_action) is BasicTouch else 32
@@ -472,18 +483,18 @@ class StandardTouch(CraftAction):
 
 class FocusedTouch(CraftAction):
     def __init__(self):
-        super(FocusedTouch, self).__init__("注視加工", 18, 10, False, True)
+        super(FocusedTouch, self).__init__("注視加工", 18, 10, True)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
         new_state.durability -= self.get_durability_cost(state)
         new_state.prev_action = self
         new_state.cp -= self.get_cp_cost(state)
+        failure_state = copy(new_state)
+        new_state.quality += _calc_quality(parameter, state, 150)
         if state.inner_quiet > 0:
             new_state.inner_quiet += 1
         success_state = copy(new_state)
-        new_state.quality += _calc_quality(parameter, state, 150)
-        failure_state = copy(new_state)
         if type(state.prev_action) is Observe:
             return deterministic(success_state)
         else:
@@ -493,7 +504,7 @@ class FocusedTouch(CraftAction):
 
 class Reflect(CraftAction):
     def __init__(self):
-        super(Reflect, self).__init__("真価", 24, 10, False, True)
+        super(Reflect, self).__init__("真価", 24, 10, True)
 
     def is_playable(self, state: CraftState) -> bool:
         return state.prev_action is None and super(Reflect, self).is_playable(state)
@@ -510,7 +521,7 @@ class Reflect(CraftAction):
 
 class WasteNot(CraftAction):
     def __init__(self):
-        super(WasteNot, self).__init__("倹約", 56, 0, False, False)
+        super(WasteNot, self).__init__("倹約", 56, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -522,7 +533,7 @@ class WasteNot(CraftAction):
 
 class WasteNotII(CraftAction):
     def __init__(self):
-        super(WasteNotII, self).__init__("長期倹約", 98, 0, False, False)
+        super(WasteNotII, self).__init__("長期倹約", 98, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -534,7 +545,7 @@ class WasteNotII(CraftAction):
 
 class PrudentTouch(CraftAction):
     def __init__(self):
-        super(PrudentTouch, self).__init__("倹約加工", 25, 5, False, True)
+        super(PrudentTouch, self).__init__("倹約加工", 25, 5, True)
 
     def is_playable(self, state: CraftState) -> bool:
         return state.waste_not <= 0 and super(PrudentTouch, self).is_playable(state)
@@ -552,7 +563,7 @@ class PrudentTouch(CraftAction):
 
 class GreatStrides(CraftAction):
     def __init__(self):
-        super(GreatStrides, self).__init__("グレートストライド", 32, 0, False, False)
+        super(GreatStrides, self).__init__("グレートストライド", 32, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
@@ -564,7 +575,7 @@ class GreatStrides(CraftAction):
 
 class FinalAppraisal(CraftAction):
     def __init__(self):
-        super(FinalAppraisal, self).__init__("最終確認", 1, 0, False, False)
+        super(FinalAppraisal, self).__init__("最終確認", 1, 0, False)
 
     def is_playable(self, state: CraftState) -> bool:
         # forbid continuous final appraisal because it makes episodes longer
@@ -580,7 +591,7 @@ class FinalAppraisal(CraftAction):
 
 class Manipulation(CraftAction):
     def __init__(self):
-        super(Manipulation, self).__init__("マニピュレーション", 96, 0, False, False)
+        super(Manipulation, self).__init__("マニピュレーション", 96, 0, False)
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)
