@@ -468,7 +468,10 @@ class StandardTouch(CraftAction):
         super(StandardTouch, self).__init__("中級加工", 32, 10, True)
 
     def get_cp_cost(self, state: CraftState) -> int:
-        return 18 if type(state.prev_action) is BasicTouch else 32
+        cost = 18 if type(state.prev_action) is BasicTouch else 32
+        if state.condition == StatusCondition.PLIANT:
+            cost //= 2
+        return cost
 
     def apply(self, parameter: CraftParameter, state: CraftState) -> List[ProbabilisticState]:
         new_state = copy(state)

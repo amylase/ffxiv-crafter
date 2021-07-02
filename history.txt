@@ -1,0 +1,91 @@
+<Item internal_level: 490, max_durability: 55, max_progress: 12046, max_quality: 81447, standard_craftsmanship: 2180, standard_control: 2010, expert_recipe: True>
+<State durability: 55, progress: 0, quality: 0, cp: 655, condition: 通常, inner_quiet: 0, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 0, prev_action: None, result: CraftResult.ONGOING>
+score: 0.044 (predicted quality: 3546)
+確信, elapsed: 2.825, score: 0.134 (predicted quality: 10934)
+<State durability: 45, progress: 1604, quality: 0, cp: 649, condition: 通常, inner_quiet: 0, innovation: 0, veneration: 0, muscle_memory: 5, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 1, prev_action: 確信, result: CraftResult.ONGOING>
+score: 0.051 (predicted quality: 4192)
+ヴェネレーション, elapsed: 0.901, score: 0.189 (predicted quality: 15384)
+<State durability: 45, progress: 1604, quality: 0, cp: 631, condition: 長持続, inner_quiet: 0, innovation: 0, veneration: 4, muscle_memory: 4, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 2, prev_action: ヴェネレーション, result: CraftResult.ONGOING>
+score: 0.059 (predicted quality: 4837)
+突貫作業, elapsed: 0.834, score: 0.230 (predicted quality: 18708)
+<State durability: 35, progress: 1604, quality: 0, cp: 631, condition: 通常, inner_quiet: 0, innovation: 0, veneration: 3, muscle_memory: 3, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 3, prev_action: 突貫作業, result: CraftResult.ONGOING>
+score: 0.044 (predicted quality: 3546)
+突貫作業, elapsed: 0.582, score: 0.199 (predicted quality: 16239)
+<State durability: 25, progress: 1604, quality: 0, cp: 631, condition: 頑丈, inner_quiet: 0, innovation: 0, veneration: 2, muscle_memory: 2, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 4, prev_action: 突貫作業, result: CraftResult.ONGOING>
+score: 0.042 (predicted quality: 3386)
+突貫作業, elapsed: 0.508, score: 0.168 (predicted quality: 13696)
+<State durability: 20, progress: 9625, quality: 0, cp: 631, condition: 高品質, inner_quiet: 0, innovation: 0, veneration: 1, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 5, prev_action: 突貫作業, result: CraftResult.ONGOING>
+score: 0.085 (predicted quality: 6933)
+インナークワイエット, elapsed: 1.219, score: 0.274 (predicted quality: 22354)
+<State durability: 20, progress: 9625, quality: 0, cp: 613, condition: 頑丈, inner_quiet: 1, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 6, prev_action: インナークワイエット, result: CraftResult.ONGOING>
+score: 0.235 (predicted quality: 19133)
+加工, elapsed: 1.423, score: 0.313 (predicted quality: 25484)
+<State durability: 15, progress: 9625, quality: 645, cp: 595, condition: 通常, inner_quiet: 2, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 7, prev_action: 加工, result: CraftResult.ONGOING>
+score: 0.232 (predicted quality: 18932)
+中級加工, elapsed: 0.601, score: 0.315 (predicted quality: 25685)
+<State durability: 5, progress: 9625, quality: 1649, cp: 577, condition: 高能率, inner_quiet: 3, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 8, prev_action: 中級加工, result: CraftResult.ONGOING>
+score: 0.268 (predicted quality: 21849)
+マニピュレーション, elapsed: 0.149, score: 0.349 (predicted quality: 28401)
+<State durability: 5, progress: 9625, quality: 1649, cp: 529, condition: 頑丈, inner_quiet: 3, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 8, turn: 9, prev_action: マニピュレーション, result: CraftResult.ONGOING>
+score: 0.276 (predicted quality: 22467)
+倹約加工, elapsed: 0.340, score: 0.379 (predicted quality: 30893)
+<State durability: 7, progress: 9625, quality: 2621, cp: 504, condition: 高進捗, inner_quiet: 4, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 7, turn: 10, prev_action: 倹約加工, result: CraftResult.ONGOING>
+score: 0.310 (predicted quality: 25231)
+マスターズメンド, elapsed: 0.391, score: 0.387 (predicted quality: 31508)
+<State durability: 42, progress: 9625, quality: 2621, cp: 416, condition: 通常, inner_quiet: 4, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 6, turn: 11, prev_action: マスターズメンド, result: CraftResult.ONGOING>
+score: 0.310 (predicted quality: 25231)
+作業, elapsed: 1.291, score: 0.387 (predicted quality: 31508)
+<State durability: 37, progress: 10266, quality: 2621, cp: 416, condition: 頑丈, inner_quiet: 4, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 5, turn: 12, prev_action: 作業, result: CraftResult.ONGOING>
+score: 0.310 (predicted quality: 25231)
+作業, elapsed: 1.068, score: 0.391 (predicted quality: 31868)
+<State durability: 37, progress: 10907, quality: 2621, cp: 416, condition: 高能率, inner_quiet: 4, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 4, turn: 13, prev_action: 作業, result: CraftResult.ONGOING>
+score: 0.310 (predicted quality: 25231)
+長期倹約, elapsed: 0.944, score: 0.433 (predicted quality: 35263)
+<State durability: 42, progress: 10907, quality: 2621, cp: 367, condition: 長持続, inner_quiet: 4, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 8, great_strides: 0, final_appraisal: 0, manipulation: 3, turn: 14, prev_action: 長期倹約, result: CraftResult.ONGOING>
+score: 0.351 (predicted quality: 28626)
+イノベーション, elapsed: 0.968, score: 0.462 (predicted quality: 37619)
+<State durability: 47, progress: 10907, quality: 2621, cp: 349, condition: 高進捗, inner_quiet: 4, innovation: 6, veneration: 0, muscle_memory: 0, waste_not: 7, great_strides: 0, final_appraisal: 0, manipulation: 2, turn: 15, prev_action: イノベーション, result: CraftResult.ONGOING>
+score: 0.404 (predicted quality: 32903)
+下地加工, elapsed: 0.748, score: 0.499 (predicted quality: 40632)
+<State durability: 42, progress: 10907, quality: 6079, cp: 309, condition: 安定, inner_quiet: 6, innovation: 5, veneration: 0, muscle_memory: 0, waste_not: 6, great_strides: 0, final_appraisal: 0, manipulation: 1, turn: 16, prev_action: 下地加工, result: CraftResult.ONGOING>
+score: 0.411 (predicted quality: 33497)
+専心加工, elapsed: 0.584, score: 0.511 (predicted quality: 41608)
+<State durability: 42, progress: 10907, quality: 8396, cp: 303, condition: 通常, inner_quiet: 11, innovation: 4, veneration: 0, muscle_memory: 0, waste_not: 5, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 17, prev_action: 専心加工, result: CraftResult.ONGOING>
+score: 0.449 (predicted quality: 36575)
+下地加工, elapsed: 0.689, score: 0.553 (predicted quality: 45064)
+<State durability: 32, progress: 10907, quality: 16545, cp: 263, condition: 通常, inner_quiet: 11, innovation: 3, veneration: 0, muscle_memory: 0, waste_not: 4, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 18, prev_action: 下地加工, result: CraftResult.ONGOING>
+score: 0.499 (predicted quality: 40650)
+下地加工, elapsed: 0.686, score: 0.587 (predicted quality: 47808)
+<State durability: 22, progress: 10907, quality: 24694, cp: 223, condition: 通常, inner_quiet: 11, innovation: 2, veneration: 0, muscle_memory: 0, waste_not: 3, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 19, prev_action: 下地加工, result: CraftResult.ONGOING>
+score: 0.503 (predicted quality: 40990)
+下地加工, elapsed: 0.744, score: 0.621 (predicted quality: 50592)
+<State durability: 12, progress: 10907, quality: 32843, cp: 183, condition: 通常, inner_quiet: 11, innovation: 1, veneration: 0, muscle_memory: 0, waste_not: 2, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 20, prev_action: 下地加工, result: CraftResult.ONGOING>
+score: 0.545 (predicted quality: 44386)
+グレートストライド, elapsed: 0.500, score: 0.665 (predicted quality: 54184)
+<State durability: 12, progress: 10907, quality: 32843, cp: 151, condition: 高能率, inner_quiet: 11, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 1, great_strides: 3, final_appraisal: 0, manipulation: 0, turn: 21, prev_action: グレートストライド, result: CraftResult.ONGOING>
+score: 0.545 (predicted quality: 44386)
+マスターズメンド, elapsed: 0.334, score: 0.680 (predicted quality: 55394)
+<State durability: 42, progress: 10907, quality: 32843, cp: 107, condition: 長持続, inner_quiet: 11, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 2, final_appraisal: 0, manipulation: 0, turn: 22, prev_action: マスターズメンド, result: CraftResult.ONGOING>
+score: 0.545 (predicted quality: 44386)
+下地加工, elapsed: 0.351, score: 0.737 (predicted quality: 60006)
+<State durability: 22, progress: 10907, quality: 43708, cp: 67, condition: 通常, inner_quiet: 11, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 23, prev_action: 下地加工, result: CraftResult.ONGOING>
+score: 0.570 (predicted quality: 46424)
+作業, elapsed: 0.205, score: 0.737 (predicted quality: 60006)
+<State durability: 12, progress: 11548, quality: 43708, cp: 67, condition: 長持続, inner_quiet: 11, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 24, prev_action: 作業, result: CraftResult.ONGOING>
+score: 0.570 (predicted quality: 46424)
+経過観察, elapsed: 0.062, score: 0.737 (predicted quality: 60006)
+<State durability: 12, progress: 11548, quality: 43708, cp: 60, condition: 頑丈, inner_quiet: 11, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 25, prev_action: 経過観察, result: CraftResult.ONGOING>
+score: 0.587 (predicted quality: 47782)
+グレートストライド, elapsed: 0.051, score: 0.737 (predicted quality: 60006)
+<State durability: 12, progress: 11548, quality: 43708, cp: 28, condition: 高品質, inner_quiet: 11, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 3, final_appraisal: 0, manipulation: 0, turn: 26, prev_action: グレートストライド, result: CraftResult.ONGOING>
+score: 0.637 (predicted quality: 51856)
+ビエルゴの祝福, elapsed: 0.026, score: 0.837 (predicted quality: 68155)
+<State durability: 2, progress: 11548, quality: 68155, cp: 4, condition: 頑丈, inner_quiet: 0, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 27, prev_action: ビエルゴの祝福, result: CraftResult.ONGOING>
+score: 0.837 (predicted quality: 68155)
+作業, elapsed: 0.000, score: 0.837 (predicted quality: 68155)
+done
+<State durability: 0, progress: 12046, quality: 68155, cp: 4, condition: 頑丈, inner_quiet: 0, innovation: 0, veneration: 0, muscle_memory: 0, waste_not: 0, great_strides: 0, final_appraisal: 0, manipulation: 0, turn: 27, prev_action: 作業, result: CraftResult.SUCCESS>
+CraftResult.SUCCESS
+total time: 19.028
+
+Process finished with exit code 0

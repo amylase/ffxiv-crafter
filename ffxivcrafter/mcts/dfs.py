@@ -1,10 +1,12 @@
 import pickle
+from copy import copy
 from functools import lru_cache
-from typing import Tuple, Optional, Callable
+from typing import Tuple, Optional, Callable, List
 
 from ffxivcrafter.environment.action import all_actions, CraftAction, RapidSynthesis, BasicTouch, DelicateSynthesis, \
     ByregotBlessing, PreparatoryTouch, HastyTouch, PreciseTouch, PatientTouch, Innovation, StandardTouch, FocusedTouch, \
-    GreatStrides, InnerQuiet, FinalAppraisal, Veneration, Manipulation, WasteNot, WasteNotII
+    GreatStrides, InnerQuiet, FinalAppraisal, Veneration, Manipulation, WasteNot, WasteNotII, Observe, FocusedSynthesis, \
+    BasicSynthesis, PrudentTouch
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 from ffxivcrafter.mcts.playout import Greedy
 from ffxivcrafter.modeling.model import LinearEvaluator
@@ -26,8 +28,8 @@ def greedy_evaluator(params: CraftParameter, state: CraftState) -> float:
 
 def is_completable(params: CraftParameter, state: CraftState) -> bool:
     rapid_synth = RapidSynthesis()
-    if not rapid_synth.is_playable(state):
-        return False
+    state = copy(state)
+    state.final_appraisal = 0
     for next_state, proba in rapid_synth.play(params, state):
         if next_state.result == CraftResult.SUCCESS:
             return True
@@ -35,13 +37,15 @@ def is_completable(params: CraftParameter, state: CraftState) -> bool:
 
 
 _quality_actions = frozenset([BasicTouch(), ByregotBlessing(), PreparatoryTouch(), HastyTouch(), PreciseTouch(),
-                              PatientTouch(), Innovation(), StandardTouch(), FocusedTouch(), GreatStrides()])
+                              PatientTouch(), Innovation(), StandardTouch(), FocusedTouch(), GreatStrides(), PrudentTouch()])
 def is_quality_action(action: CraftAction) -> bool:
     return action in _quality_actions
 
 
 def is_meaningful_action(action: CraftAction, params: CraftParameter, state: CraftState):
-    if isinstance(action, InnerQuiet):
+    if isinstance(state.prev_action, Observe):
+        return isinstance(action, FocusedTouch) or isinstance(action, FocusedSynthesis) or isinstance(action, BasicSynthesis)
+    elif isinstance(action, InnerQuiet):
         return state.inner_quiet <= 0
     elif isinstance(action, FinalAppraisal):
         return state.final_appraisal <= 0
@@ -50,7 +54,7 @@ def is_meaningful_action(action: CraftAction, params: CraftParameter, state: Cra
     elif isinstance(action, PatientTouch):
         return state.inner_quiet <= 8
     elif isinstance(action, RapidSynthesis):
-        for next_state, proba in action.apply(params, state):
+        for next_state, proba in action.play(params, state):
             if next_state.progress >= params.item.max_progress:
                 return False
         return True
@@ -72,11 +76,11 @@ def is_meaningful_action(action: CraftAction, params: CraftParameter, state: Cra
     return True
 
 
-def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, depth: int) -> Tuple[Optional[CraftAction], float]:
+def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, depth: int) -> Tuple[List[CraftAction], float]:
     if state.result != CraftResult.ONGOING:
-        return None, terminal_score(params, state)
+        return [], terminal_score(params, state)
     if depth == 0:
-        return None, evaluator(params, state)
+        return [], evaluator(params, state)
     is_completable_state = is_completable(params, state)
     actions = [action for action in all_actions() if action.is_playable(state) and (is_completable_state or not is_quality_action(action))]
     expectations = []
@@ -101,17 +105,17 @@ def dfs(params: CraftParameter, state: CraftState, evaluator: EvaluatorType, dep
         normal_proba = sum(proba for next_state, proba in next_normal_states)
         next_normal_states = [(next_state, proba * (ongoing_proba / normal_proba)) for next_state, proba in next_normal_states]
         for next_state, proba in next_normal_states + next_terminal_states:
-            sub_exp = dfs(params, next_state, evaluator, depth - 1)[1]
+            sub_acts, sub_exp = dfs(params, next_state, evaluator, depth if action.ja_name in ["最終確認", "経過観察"] else (depth - 1))
             expectation += sub_exp * proba
             upper_bound -= (1 - sub_exp) * proba
             if upper_bound < best_expectation:
                 break
-        expectations.append((action, expectation))
+        expectations.append(([action] + sub_acts, expectation))
         best_expectation = max(best_expectation, expectation)
     return max(expectations, key=lambda tup: tup[1])
 
 
-if __name__ == '__main__':
+def main(seed: int):
     import random
     import time
     import json
@@ -125,7 +129,7 @@ if __name__ == '__main__':
     rng = random.Random()
     print(item)
 
-    depth = 4
+    depth = 3
     evaluator = greedy_evaluator
     # with open("../../data/model_params.json", "rb") as f:
     #     model_params = json.load(f)
@@ -133,23 +137,34 @@ if __name__ == '__main__':
     #
     #     def evaluator(params: CraftParameter, state: CraftState) -> float:
     #         return model.evaluate(state)
-    rng.seed(10000)
+    rng.seed(seed)
     total_time = -time.time()
     while state.result == CraftResult.ONGOING:
         elapsed = -time.time()
         print(state)
+        # with open(f"../../data/turn{state.turn}.pkl", "wb") as f:
+        #     pickle.dump(state, f)
         current_score = evaluator(params, state)
         print(f"score: {current_score:.3f} (predicted quality: {int(current_score * params.item.max_quality)})")
-        action, score = dfs(params, state, evaluator, depth)
+        actions, score = dfs(params, state, evaluator, depth)
         elapsed += time.time()
-        print(f"{action}, elapsed: {elapsed:.3f}, score: {score:.3f} (predicted quality: {int(score * params.item.max_quality)})")
-        next_states, weights = zip(*action.play(params, state))
+        print(f"{list(map(str, actions))}, elapsed: {elapsed:.3f}, score: {score:.3f} (predicted quality: {int(score * params.item.max_quality)})")
+        next_states, weights = zip(*actions[0].play(params, state))
         state = rng.choices(next_states, weights)[0]
-        if elapsed < 0.3:
-            print(f"increasing depth: {depth} -> {depth + 1}")
-            depth += 1
+        # if elapsed < 0.3:
+        #     print(f"increasing depth: {depth} -> {depth + 1}")
+        #     depth += 1
     print("done")
     print(state)
     print(state.result)
     total_time += time.time()
     print(f"total time: {total_time:.3f}")
+    return terminal_score(params, state)
+
+
+if __name__ == '__main__':
+    # from multiprocessing import Pool
+    # pool = Pool()
+    # scores = pool.map(main, range(100))
+    # print(sum(scores) / len(scores))
+    main(99)

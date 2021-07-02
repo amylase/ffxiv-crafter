@@ -1,7 +1,7 @@
 import random
 
 from ffxivcrafter.environment.action import all_actions, CraftAction, BasicSynthesis, BasicTouch, MastersMend, \
-    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch
+    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch, Innovation
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 
 
@@ -26,6 +26,7 @@ class Greedy(PlayoutStrategy):
         self.force_normal = force_normal
 
     def playout(self, params: CraftParameter, state: CraftState) -> CraftState:
+        _state = state
         basic_synthesis = BasicSynthesis()  # sagyou
         basic_touch = BasicTouch()  # kakou
         standard_touch = StandardTouch()  # chukyu kakou
@@ -59,6 +60,8 @@ class Greedy(PlayoutStrategy):
                     action = standard_touch
                 elif state.prev_action is not None and state.prev_action.ja_name == "経過観察":
                     action = FocusedTouch()
+                # elif state.innovation == 0:
+                #     action = Innovation()
                 else:
                     action = basic_touch
             else:
