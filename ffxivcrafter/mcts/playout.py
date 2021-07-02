@@ -60,8 +60,8 @@ class Greedy(PlayoutStrategy):
                     action = standard_touch
                 elif state.prev_action is not None and state.prev_action.ja_name == "経過観察":
                     action = FocusedTouch()
-                # elif state.innovation == 0:
-                #     action = Innovation()
+                elif state.innovation == 0:
+                    action = Innovation()
                 else:
                     action = basic_touch
             else:

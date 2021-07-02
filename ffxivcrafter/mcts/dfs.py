@@ -163,8 +163,8 @@ def main(seed: int):
 
 
 if __name__ == '__main__':
-    # from multiprocessing import Pool
-    # pool = Pool()
-    # scores = pool.map(main, range(100))
-    # print(sum(scores) / len(scores))
-    main(99)
+    from multiprocessing import Pool
+    pool = Pool()
+    scores = pool.map(main, range(100))
+    print(sum(scores) / len(scores))
+    # main(99)
