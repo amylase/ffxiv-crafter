@@ -1,7 +1,7 @@
 import random
 
 from ffxivcrafter.environment.action import all_actions, CraftAction, BasicSynthesis, BasicTouch, MastersMend, \
-    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch, Innovation
+    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch, Innovation, InnerQuiet
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 
 
@@ -49,17 +49,17 @@ class Greedy(PlayoutStrategy):
                 # pure random
                 actions = [action for action in all_actions() if action.is_playable(state)]
                 action: CraftAction = random.choice(actions)
-            # elif great_strides_playable and state.cp < 74 and state.great_strides == 0:
-            #     action = great_strides
+            elif state.cp > 200 and state.manipulation == 0:
+                action = Manipulation()
             elif synthesis_playable and state.progress < basic_synthesis.play(params, state)[0][0].progress < params.item.max_progress:
                 action = basic_synthesis
-            # elif bierugo_playable and state.cp < 42:
-            #     action = bierugo
             elif touch_playable:
                 if state.prev_action is not None and state.prev_action.ja_name == "加工":
                     action = standard_touch
                 elif state.prev_action is not None and state.prev_action.ja_name == "経過観察":
                     action = FocusedTouch()
+                elif state.inner_quiet == 0:
+                    action = InnerQuiet()
                 elif state.innovation == 0:
                     action = Innovation()
                 else:
