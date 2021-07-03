@@ -142,8 +142,8 @@ def main(seed: int):
     while state.result == CraftResult.ONGOING:
         elapsed = -time.time()
         print(state)
-        # with open(f"../../data/turn{state.turn}.pkl", "wb") as f:
-        #     pickle.dump(state, f)
+        with open(f"../../data/turn{state.turn}.pkl", "wb") as f:
+            pickle.dump(state, f)
         current_score = evaluator(params, state)
         print(f"score: {current_score:.3f} (predicted quality: {int(current_score * params.item.max_quality)})")
         actions, score = dfs(params, state, evaluator, depth)
@@ -163,8 +163,8 @@ def main(seed: int):
 
 
 if __name__ == '__main__':
-    from multiprocessing import Pool
-    pool = Pool()
-    scores = pool.map(main, range(100))
-    print(sum(scores) / len(scores))
-    # main(99)
+    # from multiprocessing import Pool
+    # pool = Pool()
+    # scores = pool.map(main, range(100))
+    # print(sum(scores) / len(scores))
+    main(99)

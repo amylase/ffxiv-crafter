@@ -1,7 +1,9 @@
 import random
+from copy import copy
 
 from ffxivcrafter.environment.action import all_actions, CraftAction, BasicSynthesis, BasicTouch, MastersMend, \
-    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch, Innovation, InnerQuiet
+    ByregotBlessing, RapidSynthesis, GreatStrides, Manipulation, StandardTouch, FocusedTouch, Innovation, InnerQuiet, \
+    Veneration, WasteNotII
 from ffxivcrafter.environment.state import CraftParameter, CraftState, CraftResult, StatusCondition
 
 
@@ -52,7 +54,12 @@ class Greedy(PlayoutStrategy):
             elif state.cp > 200 and state.manipulation == 0:
                 action = Manipulation()
             elif synthesis_playable and state.progress < basic_synthesis.play(params, state)[0][0].progress < params.item.max_progress:
-                action = basic_synthesis
+                veneration_state = copy(state)
+                veneration_state.veneration = 1
+                if state.cp >= 18 and state.veneration == 0 and state.progress < basic_synthesis.play(params, veneration_state)[0][0].progress < params.item.max_progress:
+                    action = Veneration()
+                else:
+                    action = basic_synthesis
             elif touch_playable:
                 if state.prev_action is not None and state.prev_action.ja_name == "加工":
                     action = standard_touch
@@ -60,7 +67,7 @@ class Greedy(PlayoutStrategy):
                     action = FocusedTouch()
                 elif state.inner_quiet == 0:
                     action = InnerQuiet()
-                elif state.innovation == 0:
+                elif state.cp >= 18 * 3 and state.innovation == 0:
                     action = Innovation()
                 else:
                     action = basic_touch
